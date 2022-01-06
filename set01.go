@@ -39,14 +39,7 @@ func SingleByteXOR(input []byte, ch byte) []byte {
 func RepeatingKeyXOR(input []byte, key []byte) []byte {
     xored := make([]byte, len(input))
     for i := range input {
-        switch mod := i % len(key); mod {
-        case 0:
-            xored[i] = input[i] ^ key[0]
-        case 1:
-            xored[i] = input[i] ^ key[1]
-        case 2:
-            xored[i] = input[i] ^ key[2]
-        }
+        xored[i] = input[i] ^ key[i % len(key)]
     }
     return xored
 }
