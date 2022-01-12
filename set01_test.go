@@ -164,14 +164,18 @@ a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f`
 }
 
 func TestBreakRepeatingKeyXOR(t *testing.T) {
-    ciphertext, err := os.Open("6.txt")
+    f, err := os.Open("6.txt")
     if err != nil {
         t.Fatalf("%s", err)
     }
-    defer ciphertext.Close()
+    defer f.Close()
 
-    data, _ := io.ReadAll(ciphertext)
-    data = bytes.ReplaceAll(data, []byte("\n"), []byte(""))
+    data, _ := io.ReadAll(f)
+    based64, err := base64.StdEncoding.DecodeString(string(data))
+    if err != nil {
+        t.Fatalf("%s", err)
+    }
+    fmt.Println(len(based64))
 
     a, b := "this is a test", "wokka wokka!!!"
     hamming := func(sa, sb string) int {
@@ -200,35 +204,22 @@ func TestBreakRepeatingKeyXOR(t *testing.T) {
     min, max := 2, 40
     normals := make(map[int]int, max-min)
     for ksize := min; ksize < max+1; ksize++ {
-        normals[ksize] = hamming(string(data[:ksize]), string(data[ksize:ksize*2])) / ksize
+        normals[ksize] = hamming(string(based64[:ksize]), string(based64[ksize:ksize*2])) / ksize
     }
     fmt.Printf("%#v\n", normals)
 
+    keyRanges := func(length int) []int {
+        r := make([]int, 0, 10)
+        for i := 2; i < 40; i++ {
+            if length % i == 0 {
+                r = append(r, i)
+            }
+        }
+        return r
+    }
+    fmt.Println(keyRanges(len(based64)))
+
     const keySize int = 2
-
-    // TODO: Need to try this soltion as well. This is basically taking text instead of lines and
-    // breaking it down in to blocks.
-        // >>> [x for x in range(1, 40) if 3900 % x == 0] <- including newline chars and EOF
-        // [1, 2, 3, 4, 5, 6, 10, 12, 13, 15, 20, 25, 26, 30, 39]
-
-        // >>> [x for x in range(1, 40) if 3836 % x == 0] <- excluding newline chars and EOF
-        // [1, 2, 4, 7, 14, 28]
-
-    // >>> [x for x in range(1,56) if 56 % x == 0] <- last line case where we fail on toBlocks
-    // [1, 2, 4, 7, 8, 14, 28]
-
-    // >>> [x for x in range(1,60) if 60 % x == 0]
-    // [1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30]
-    //        *     *             **
-    // These are the values that pass without any errors at base64 DecodeString
-    // used python3: len(input) % i == 0 to generate these values
-    // our answer should be one of these values
-
-    // Does this mean that the Key is 2?
-    // map[int]int{2:2, 3:2, 6:2, 7:2, 15:2, 16:2, 20:2, 24:2, 28:2, 29:2}
-    // map[int]int{2:2, 3:2, 4:3, 5:3, 6:2, 7:2, 8:3, 9:3, 10:3, 11:3, 12:3,
-    // 13:3, 14:3, 15:2, 16:2, 17:3, 18:3, 19:3, 20:2, 21:3, 22:3, 23:3, 24:2,
-    // 25:3, 26:3, 27:3, 28:2, 29:2, 30:3, 31:3, 32:3, 33:3, 34:3, 35:3, 36:3, 37:3, 38:3, 39:3, 40:3}
 
     // TODO: refactor into []byte
     toBlocks := func(ksize int, s string) []string {
@@ -255,77 +246,39 @@ func TestBreakRepeatingKeyXOR(t *testing.T) {
         }
         return b
     }
-    fmt.Println(toBlocks(keySize, data))
-    fmt.Printf("%s\n\n\n\n", transpose(keySize, toBlocks(keySize, data)))
 
-    // 7. Solve each block as if it was single-character XOR.
-    // You already have code to do this.
-    // tblock := transpose(keySize, toBlocks(keySize, acph))
-    // repeatingXOR := make([]byte, keySize)
-    // for i := 0; i < keySize; i++ {
-    //     // NOTE: not sure if we need to decode it now or not
-    //     // decoded, err := base64.StdEncoding.DecodeString(string(tblock[i]))
-    //     // if err != nil {
-    //     //     t.Errorf("error: %s\n", err)
-    //     // }
-    //     // fmt.Printf("%x\n", decoded)
-    //     cph, _ := cipher2(t, tblock[i], ascii) // NOTE: we are using cipher2 here
-    //     // cph here is either cph or keySize
-    //     fmt.Printf("%c => %x\n", cph, SingleByteXOR(tblock[i], cph))
-    //     repeatingXOR[i] = cph
+    _ = toBlocks
+    _ = transpose
+
+    // for _, k := range keyRanges(len(data)) {
+    tblock := transpose(keySize, toBlocks(keySize, string(based64)))
+    for i := 0; i < keySize; i++ {
+        // fmt.Printf("%x\n", tblock[i])
+        cph, _ := cipher2(t, tblock[i], ascii) // NOTE: we are using cipher2 here
+        _ = cph
+        fmt.Printf("%c => %x\n", cph, SingleByteXOR(tblock[i], cph))
+        // repeatingXOR[i] = cph
+    }
+    //     for i := 0; i < len(tblock); i++ {
+    //         repeatingXOR := make([]byte, k)
+    //         for i := 0; i < k; i++ {
+    //             cph, _ := cipher(t, string(tblock[i]), ascii) // NOTE: we are using cipher2 here
+    //             fmt.Printf("%c => %x\n", cph, SingleByteXOR(tblock[i], cph))
+    //             repeatingXOR[i] = cph
+    //         }
+    //         // fmt.Printf("repeating XOR Key: %s\n", repeatingXOR)
+
+    //         joined := bytes.Join(tblock, []byte(""))
+    //         rpkxor := RepeatingKeyXOR(joined, repeatingXOR)
+    //         decoded, err := base64.StdEncoding.DecodeString(string(rpkxor))
+    //         if err != nil {
+    //             t.Errorf("error: %s\n", err)
+    //             continue
+    //         }
+    //         // _ = decoded
+
+    //         // Printing both just in case
+    //         fmt.Printf("%s\n", decoded)
+    //     }
     // }
-
-    // 8. For each block, the single-byte XOR key that produces the best
-    // looking histogram is the repeating-key XOR key byte for that block.
-    // Put them together and you have the key.
-
-    // NOTE: I'm not sure what to use her. Either `tblock` or result from `SingleByteXOR`?
-    // fmt.Printf("%s\n", repeatingXOR)
-    // fmt.Printf("%x\n", RepeatingKeyXOR(bytes.Join(tblock, []byte("")), repeatingXOR))
-
-    collectLines := func(t *testing.T, r io.Reader) []string {
-        result := make([]string, 0, 65)
-        buf := bufio.NewReader(r)
-        line, err := buf.ReadString('\n')
-        if err != nil {
-            t.Fatalf("%s\n", err)
-        }
-        result = append(result, strings.TrimSpace(line))
-        for {
-            if err == io.EOF {
-                break
-            }
-            line, err = buf.ReadString('\n')
-            result = append(result, strings.TrimSpace(line))
-        }
-        return result
-    }
-
-    lines := collectLines(t, ciphertext)
-    for i, line := range lines {
-        if i == 63 { // we are skipping the last line for now! reason? It breaks toBlocks for some reason.
-            break
-        }
-        tblock := transpose(keySize, toBlocks(keySize, line))
-        // fmt.Printf("%s\n", tblock)
-        repeatingXOR := make([]byte, keySize)
-        for i := 0; i < keySize; i++ {
-            cph, _ := cipher2(t, tblock[i], ascii) // NOTE: we are using cipher2 here
-            // fmt.Printf("%c => %x\n", cph, SingleByteXOR(tblock[i], cph))
-            repeatingXOR[i] = cph
-        }
-        // fmt.Printf("repeating XOR Key: %s\n", repeatingXOR)
-
-        joined := bytes.Join(tblock, []byte(""))
-        decoded, err := base64.StdEncoding.DecodeString(string(joined))
-        if err != nil {
-            t.Errorf("error: %s\n", err)
-        }
-
-        _ = decoded
-
-        // Printing both just in case
-        // fmt.Printf("%s\n", decoded)
-        // fmt.Printf("%s\n", RepeatingKeyXOR(joined, repeatingXOR))
-    }
 }
