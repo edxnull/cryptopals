@@ -43,3 +43,6 @@ func RepeatingKeyXOR(input []byte, key []byte) []byte {
     }
     return xored
 }
+
+func BreakRepeatingKeyXOR() {
+}
