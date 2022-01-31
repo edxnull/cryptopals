@@ -171,11 +171,12 @@ func TestBreakRepeatingKeyXOR(t *testing.T) {
     defer f.Close()
 
     data, _ := io.ReadAll(f)
-    based64, err := base64.StdEncoding.DecodeString(string(data))
-    if err != nil {
-        t.Fatalf("%s", err)
-    }
-    fmt.Println(len(based64))
+    fmt.Println("data length:", len(data), "bytes")
+    // based64, err := base64.StdEncoding.DecodeString(string(data))
+    // if err != nil {
+    //     t.Fatalf("%s", err)
+    // }
+    // fmt.Println(len(based64))
 
     a, b := "this is a test", "wokka wokka!!!"
     hamming := func(sa, sb string) int {
@@ -202,11 +203,16 @@ func TestBreakRepeatingKeyXOR(t *testing.T) {
     }
 
     min, max := 2, 40
-    normals := make(map[int]int, max-min)
+    normals := make(map[int]float64, max-min)
     for ksize := min; ksize < max+1; ksize++ {
-        normals[ksize] = hamming(string(based64[:ksize]), string(based64[ksize:ksize*2])) / ksize
+        // fmt.Printf("%s => %s\n", data[:ksize], data[ksize:ksize*2])
+        normals[ksize] = float64(hamming(string(data[:ksize]), string(data[ksize:ksize*2])) / ksize)
     }
-    fmt.Printf("%#v\n", normals)
+    fmt.Printf("normals: %#v\n", normals)
+
+    // for k, v := range normals {
+    //     fmt.Printf("%d => %.3f\n", k, v)
+    // }
 
     keyRanges := func(length int) []int {
         r := make([]int, 0, 10)
@@ -217,9 +223,7 @@ func TestBreakRepeatingKeyXOR(t *testing.T) {
         }
         return r
     }
-    fmt.Println(keyRanges(len(based64)))
-
-    const keySize int = 2
+    fmt.Println("possible key ranges:", keyRanges(len(data)))
 
     // TODO: refactor into []byte
     toBlocks := func(ksize int, s string) []string {
@@ -250,35 +254,10 @@ func TestBreakRepeatingKeyXOR(t *testing.T) {
     _ = toBlocks
     _ = transpose
 
-    // for _, k := range keyRanges(len(data)) {
-    tblock := transpose(keySize, toBlocks(keySize, string(based64)))
-    for i := 0; i < keySize; i++ {
-        // fmt.Printf("%x\n", tblock[i])
-        cph, _ := cipher2(t, tblock[i], ascii) // NOTE: we are using cipher2 here
-        _ = cph
-        fmt.Printf("%c => %x\n", cph, SingleByteXOR(tblock[i], cph))
-        // repeatingXOR[i] = cph
+    const keySize int = 6
+    tblocks := transpose(keySize, toBlocks(keySize, string(data)))
+    for _, tb := range tblocks {
+        cph, _ := cipher2(t, tb, ascii)
+        fmt.Printf("char: %c\n", cph)
     }
-    //     for i := 0; i < len(tblock); i++ {
-    //         repeatingXOR := make([]byte, k)
-    //         for i := 0; i < k; i++ {
-    //             cph, _ := cipher(t, string(tblock[i]), ascii) // NOTE: we are using cipher2 here
-    //             fmt.Printf("%c => %x\n", cph, SingleByteXOR(tblock[i], cph))
-    //             repeatingXOR[i] = cph
-    //         }
-    //         // fmt.Printf("repeating XOR Key: %s\n", repeatingXOR)
-
-    //         joined := bytes.Join(tblock, []byte(""))
-    //         rpkxor := RepeatingKeyXOR(joined, repeatingXOR)
-    //         decoded, err := base64.StdEncoding.DecodeString(string(rpkxor))
-    //         if err != nil {
-    //             t.Errorf("error: %s\n", err)
-    //             continue
-    //         }
-    //         // _ = decoded
-
-    //         // Printing both just in case
-    //         fmt.Printf("%s\n", decoded)
-    //     }
-    // }
 }
