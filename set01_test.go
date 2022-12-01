@@ -159,8 +159,8 @@ func TestBreakRepeatingKeyXOR(t *testing.T) {
 	min, max := 2, 40
 	normals := make(map[int]float64, max-min)
 	for ksize := min; ksize < max+1; ksize++ {
-        normals[ksize] = float64(hamming(string(data[:ksize]),
-                                         string(data[ksize:ksize*2]))) / float64(ksize)
+		normals[ksize] = float64(hamming(string(data[:ksize]),
+			string(data[ksize:ksize*2]))) / float64(ksize)
 	}
 	var average float64
 	for k := 2; k <= 16; k *= 2 {
@@ -175,16 +175,16 @@ func TestBreakRepeatingKeyXOR(t *testing.T) {
 		}
 	}
 
-	toBlocks := func(ksize int, s string) []string {
+	toblocks := func(ksize int, s string) []string {
 		b := make([]string, 0, len(s)/ksize)
 		for i := range s {
 			if i%ksize == 0 && i+ksize < len(s) {
-                // if i+ksize > len(s) {
-                //     // NOTE: handle case where we don't have
-                //     //       ksize of bytes left to copy
-                //     b = append(b, s[i:])
-                //     continue
-                // }
+				// if i+ksize > len(s) {
+				//     // note: handle case where we dont have
+				//     //       ksize of bytes left to copy
+				//     b = append(b, s[i:])
+				//     continue
+				// }
 				b = append(b, s[i:i+ksize])
 			}
 		}
@@ -196,14 +196,14 @@ func TestBreakRepeatingKeyXOR(t *testing.T) {
 		for i := 0; i < ksize; i++ {
 			tmp := make([]byte, 0, len(strings.Join(blocks, ""))/ksize)
 			for j := range blocks {
-                tmp = append(tmp, blocks[j][i])
-                // get the last elem length
-                //if i < len(blocks[len(blocks)-1]) {
-                //    tmp = append(tmp, blocks[j][i])
-                //}
-                //if j < len(blocks)-1 {
-                //    tmp = append(tmp, blocks[j][i])
-                //}
+				tmp = append(tmp, blocks[j][i])
+				// get the last elem length
+				//if i < len(blocks[len(blocks)-1]) {
+				//    tmp = append(tmp, blocks[j][i])
+				//}
+				//if j < len(blocks)-1 {
+				//    tmp = append(tmp, blocks[j][i])
+				//}
 			}
 			b = append(b, tmp)
 		}
@@ -212,50 +212,50 @@ func TestBreakRepeatingKeyXOR(t *testing.T) {
 
 	data, err = base64.StdEncoding.DecodeString(string(data))
 	if err != nil {
-	    t.Fatalf("%s", err)
+		t.Fatalf("%s", err)
 	}
 
-    newScore := func(line []byte) int {
-        nwords := len(bytes.Fields(line))
-        nspace := bytes.Count(line, []byte(" "))
-        nbytes := 0
-        for i := range line {
-            isAlpha := line[i] >= 'A' && line[i] <= 'Z' || line [i] >= 'a' && line[i] <= 'z'
-            if isAlpha {
-                nbytes += 1
-            } else {
-                nbytes -= 1
-            }
-        }
+	newScore := func(line []byte) int {
+		nwords := len(bytes.Fields(line))
+		nspace := bytes.Count(line, []byte(" "))
+		nbytes := 0
+		for i := range line {
+			isAlpha := line[i] >= 'A' && line[i] <= 'Z' || line[i] >= 'a' && line[i] <= 'z'
+			if isAlpha {
+				nbytes += 1
+			} else {
+				nbytes -= 1
+			}
+		}
 
-        return nbytes + nwords + nspace
-    }
+		return nbytes + nwords + nspace
+	}
 
-    answer := make([]byte, 0, keySize)
+	answer := make([]byte, 0, keySize)
 	tblocks := transpose(keySize, toBlocks(keySize, string(data)))
 	for _, tb := range tblocks {
-        var (
-            char byte
-            best int
-        )
-        for i := range ascii {
-            xored := SingleByteXOR(tb, ascii[i])
-            if score := newScore(xored); best < score {
-                char = ascii[i]
-                best = score
-            }
-        }
-        answer = append(answer, char)
+		var (
+			char byte
+			best int
+		)
+		for i := range ascii {
+			xored := SingleByteXOR(tb, ascii[i])
+			if score := newScore(xored); best < score {
+				char = ascii[i]
+				best = score
+			}
+		}
+		answer = append(answer, char)
 	}
-    fmt.Printf("%s\n", answer)
-    phrase := "Terminator X: Bring the noise"
-    if string(answer) != phrase {
-        t.Fatalf("wrong result: want '%s'\nbut got '%s'", phrase, answer)
-    }
+	fmt.Printf("%s\n", answer)
+	phrase := "Terminator X: Bring the noise"
+	if string(answer) != phrase {
+		t.Fatalf("wrong result: want '%s'\nbut got '%s'", phrase, answer)
+	}
 
-    // NOTE: Interesting to note that it doesn't matter if we ommit
-    //       JwwRTWM= in our block func and transpose func.
-    _ = RepeatingKeyXOR(data, answer)
+	// NOTE: Interesting to note that it doesn't matter if we ommit
+	//       JwwRTWM= in our block func and transpose func.
+	_ = RepeatingKeyXOR(data, answer)
 }
 
 func TestAES128Encrypt(t *testing.T) {

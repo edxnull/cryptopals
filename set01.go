@@ -46,9 +46,9 @@ func RepeatingKeyXOR(input []byte, key []byte) []byte {
 
 // NOTE: 10 rounds for 128
 func AES128Encrypt(input []byte) {
-    // KeyExpansion
-    // SubBytes
-    // ShiftRows
-    // MixColumns
-    // AddRoundKey
+	// KeyExpansion
+	// SubBytes
+	// ShiftRows
+	// MixColumns
+	// AddRoundKey
 }
