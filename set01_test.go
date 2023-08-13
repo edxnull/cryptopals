@@ -10,6 +10,7 @@ import (
 	"math"
 	"os"
 	"strings"
+    "crypto/aes"
 	"testing"
 )
 
@@ -258,4 +259,29 @@ func TestBreakRepeatingKeyXOR(t *testing.T) {
 }
 
 func TestAES128Encrypt(t *testing.T) {
+	f, err := os.Open("7.txt")
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	defer f.Close()
+
+	data, _ := io.ReadAll(f)
+	data, err = base64.StdEncoding.DecodeString(string(data))
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+    cipher, _ := aes.NewCipher([]byte("YELLOW SUBMARINE"))
+    decrypted := make([]byte, len(data))
+
+    end := aes.BlockSize
+    for start := 0; start < len(data); start += aes.BlockSize {
+        cipher.Decrypt(decrypted[start:end], data[start:end])
+        end += aes.BlockSize
+    }
+
+    want := []byte("I'm back and I'm ringin' the bell")
+    if !bytes.Contains(decrypted, want) {
+        t.Fatalf("wrong result: want '%s'\nbut got '%s'", want, decrypted[0:33])
+    }
 }
