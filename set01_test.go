@@ -38,7 +38,7 @@ func TestFixedXOR(t *testing.T) {
 	}
 }
 
-func cipher(t *testing.T, input, ascii string) (byte, int) {
+func decipher(t *testing.T, input, ascii string) (byte, int) {
 	var max int
 	var result byte
 	for i := range ascii {
@@ -65,7 +65,7 @@ const ascii = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ !\
 
 func TestSingleByteXOR(t *testing.T) {
 	encoded := "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
-	cph, _ := cipher(t, encoded, ascii)
+	cph, _ := decipher(t, encoded, ascii)
 	fmt.Printf("%s\n", SingleByteXOR(hexdec(t, encoded), cph))
 }
 
@@ -102,7 +102,7 @@ func TestDetectSingleCharacterXOR(t *testing.T) {
 
 	lines := collectLines(t, f)
 	for i, line := range lines {
-		cph, max := cipher(t, line, ascii)
+		cph, max := decipher(t, line, ascii)
 		if answer.score < max {
 			answer.score = max
 			answer.cipher = cph
@@ -227,7 +227,6 @@ func TestBreakRepeatingKeyXOR(t *testing.T) {
 				nbytes -= 1
 			}
 		}
-
 		return nbytes + nwords + nspace
 	}
 
