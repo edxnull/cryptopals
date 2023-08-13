@@ -232,7 +232,7 @@ func TestBreakRepeatingKeyXOR(t *testing.T) {
 	}
 
 	answer := make([]byte, 0, keySize)
-	tblocks := transpose(keySize, toBlocks(keySize, string(data)))
+	tblocks := transpose(keySize, toblocks(keySize, string(data)))
 	for _, tb := range tblocks {
 		var (
 			char byte
