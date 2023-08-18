@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 )
 
 // Hex encoding and Base64 encoding
@@ -44,11 +45,36 @@ func RepeatingKeyXOR(input []byte, key []byte) []byte {
 	return xored
 }
 
-// NOTE: 10 rounds for 128
+// Here’s what you should know from the get-go: without the proper background,
+// the AES encryption algorithm can be a tough one to understand.
+// To fully appreciate its intricacies, you would probably have
+// to be a maths major (at least).
 func AES128Encrypt(input []byte) {
+	bsize := 4
+	blocks := make([][]byte, 0, 10)
+	for i := range input {
+		if i%bsize == 0 {
+			if i+bsize > len(input) {
+				last := i + bsize - len(input)
+				// fmt.Printf("%s\n", input[i:i+last])
+				blocks = append(blocks, input[i:i+last])
+				break
+			}
+			blocks = append(blocks, input[i:i+bsize])
+			// fmt.Printf("%s\n", input[i:i+bsize])
+		}
+	}
+	for i := range blocks {
+		fmt.Printf("%d %s\n", i, blocks[i])
+	}
 	// KeyExpansion
 	// SubBytes
 	// ShiftRows
 	// MixColumns
 	// AddRoundKey
+}
+
+func main() {
+	phrase := []byte("better late than never")
+	AES128Encrypt(phrase)
 }
