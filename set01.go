@@ -65,6 +65,36 @@ func AES128Encrypt(input []byte) {
 		}
 	}
 
+	// Rijndael's galois field only allows an 8 bit number
+	// (a number from 0 to 255) to fit in it. All mathematical
+	// operations defined in the field result in an 8-bit number.
+
+	// Addition and subtraction are performed
+	// by the exclusive or operation. The two operations are the same;
+	// there is no difference between addition and subtraction.
+	gAdd := func(a byte, b byte) byte { return a ^ b }
+	gSub := func(a byte, b byte) byte { return a ^ b }
+	gMul := func(a byte, b byte) byte {
+		var (
+			prod     byte
+			hiBitSet byte
+		)
+		for i := 0; i < 8; i++ {
+			if (b & 1) == 1 {
+				prod ^= a
+			}
+			hiBitSet = (a & 0x80)
+			a <<= 1
+			if hiBitSet == 0x80 {
+				a ^= 0x1b
+			}
+			b >>= 1
+		}
+		return prod
+	}
+	_, _, _ = gAdd, gSub, gMul
+	fmt.Println(gMul(byte(7), byte(3)))
+
 	rotate := func(b []byte) []byte {
 		if len(b) != 4 {
 			panic("invalid length block")
