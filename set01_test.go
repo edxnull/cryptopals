@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"crypto/aes"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
@@ -10,7 +11,6 @@ import (
 	"math"
 	"os"
 	"strings"
-    "crypto/aes"
 	"testing"
 )
 
@@ -271,17 +271,17 @@ func TestAES128Encrypt(t *testing.T) {
 		t.Fatalf("%s", err)
 	}
 
-    cipher, _ := aes.NewCipher([]byte("YELLOW SUBMARINE"))
-    decrypted := make([]byte, len(data))
+	cipher, _ := aes.NewCipher([]byte("YELLOW SUBMARINE"))
+	decrypted := make([]byte, len(data))
 
-    end := aes.BlockSize
-    for start := 0; start < len(data); start += aes.BlockSize {
-        cipher.Decrypt(decrypted[start:end], data[start:end])
-        end += aes.BlockSize
-    }
+	end := aes.BlockSize
+	for start := 0; start < len(data); start += aes.BlockSize {
+		cipher.Decrypt(decrypted[start:end], data[start:end])
+		end += aes.BlockSize
+	}
 
-    want := []byte("I'm back and I'm ringin' the bell")
-    if !bytes.Contains(decrypted, want) {
-        t.Fatalf("wrong result: want '%s'\nbut got '%s'", want, decrypted[0:33])
-    }
+	want := []byte("I'm back and I'm ringin' the bell")
+	if !bytes.Contains(decrypted, want) {
+		t.Fatalf("wrong result: want '%s'\nbut got '%s'", want, decrypted[0:33])
+	}
 }
