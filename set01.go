@@ -68,6 +68,7 @@ func AES128Encrypt(input []byte) {
 	// https://www.samiam.org/rijndael.html
 	// https://www.youtube.com/watch?v=O4xNJsjtN6E
 	// https://cybernews.com/resources/what-is-aes-encryption/
+	// https://www.cs.rit.edu/~spr/gdn2010/sticky.pdf
 
 	// Rijndael's galois field only allows an 8 bit number
 	// (a number from 0 to 255) to fit in it. All mathematical
@@ -115,7 +116,7 @@ func AES128Encrypt(input []byte) {
 	_, _, _, _, _ = gAdd, gSub, gMul, gSbox, gRcon
 	fmt.Println(gMul(byte(7), byte(3)))
 
-	expGen := []byte{
+	generator := []byte{
 		0: 0x3, 1: 0x5, 2: 0x6, 3: 0x9,
 		4: 0xb, 5: 0xe, 6: 0x11, 7: 0x12,
 		8: 0x13, 9: 0x14, 10: 0x17, 11: 0x18,
@@ -149,14 +150,20 @@ func AES128Encrypt(input []byte) {
 		120: 0xf4, 121: 0xf5, 122: 0xf6, 123: 0xf8,
 		124: 0xfb, 125: 0xfd, 126: 0xfe, 127: 0xff,
 	}
-	_ = expGen
+	_ = generator
 
 	row := byte(1)
-	for i := 0; i < (16*16)-1; i++ {
+	for i := 0; i < (16*16)-1; i++ { // 255 -> 0x100
 		row = gMul(row, 0xe5)
 	}
+	_ = row
+	fmt.Printf("%x\n", gMul(0xc7, 0xe5))
 
-	fmt.Printf("glog %x\n", gMul(0xe5, 0xe5))
+	foo := byte(1)
+	for i := 0; i < 2; i++ {
+		foo = gMul(0x1, 0xe5)
+	}
+	fmt.Printf("%x\n", foo)
 
 	rotate := func(b []byte) []byte {
 		if len(b) != 4 {
