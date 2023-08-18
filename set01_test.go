@@ -285,3 +285,44 @@ func TestAES128Encrypt(t *testing.T) {
 		t.Fatalf("wrong result: want '%s'\nbut got '%s'", want, decrypted[0:33])
 	}
 }
+
+// In this file are a bunch of hex-encoded ciphertexts.
+// One of them has been encrypted with ECB.
+//
+// Detect it.
+//
+// Remember that the problem with ECB is that it is stateless and deterministic;
+// the same 16 byte plaintext block will always produce the same 16 byte ciphertext.
+//
+// https://cryptopals.com/sets/1/challenges/8
+// https://cryptopals.com/static/challenge-data/8.txt
+//
+func TestDetectAESinECBMode(t *testing.T) {
+	f, err := os.Open("8.txt")
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	defer f.Close()
+
+	//_data, _ := io.ReadAll(f)
+	//deHexed, _ := hex.DecodeString(string(data))
+	//if err != nil {
+	//	t.Fatalf("%s", err)
+	//}
+	//_ = deHexed
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		hexDec, _ := hex.DecodeString(scanner.Text())
+		fmt.Printf("%x\n", hexDec)
+	}
+	// bsize := aes.BlockSize
+	// decrypted := make([]byte, len(data))
+	// for i := 0; i < len(deHexed); i += aes.BlockSize {
+	//     cipher, _ := aes.NewCipher([]byte(deHexed[i:bsize]))
+	//     cipher.Decrypt(decrypted[i:bsize], data[i:bsize])
+	//     bsize += aes.BlockSize
+	// }
+
+	// fmt.Printf("%s", decrypted)
+}
