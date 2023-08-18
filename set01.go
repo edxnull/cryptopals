@@ -64,9 +64,19 @@ func AES128Encrypt(input []byte) {
 			// fmt.Printf("%s\n", input[i:i+bsize])
 		}
 	}
-	for i := range blocks {
-		fmt.Printf("%d %s\n", i, blocks[i])
+
+	rotate := func(b []byte) []byte {
+		if len(b) != 4 {
+			panic("invalid length block")
+		}
+		return []byte{0: b[1], 1: b[2], 2: b[3], 3: b[0]}
 	}
+
+	for i := range blocks {
+		fmt.Printf("%d %d %s %x %x\n", i, len(blocks[i]),
+			blocks[i], blocks[i], rotate(blocks[i]))
+	}
+
 	// KeyExpansion
 	// SubBytes
 	// ShiftRows
@@ -76,5 +86,7 @@ func AES128Encrypt(input []byte) {
 
 func main() {
 	phrase := []byte("better late than never")
-	AES128Encrypt(phrase)
+	phrase2 := []byte("extraterrestrial")
+	AES128Encrypt(phrase2)
+	_, _ = phrase, phrase2
 }
