@@ -177,6 +177,9 @@ func AES128Encrypt(input []byte) {
 
 	fmt.Printf("%x %d %d \n\n", log, len(log), cap(log))
 
+	gFastMul := func(a, b byte) byte { return exp[log[a]+log[b]] }
+	fmt.Printf("%x\n", gFastMul(0x03, 0x07))
+
 	rotate := func(b []byte) []byte {
 		if len(b) != 4 {
 			panic("invalid length block")
