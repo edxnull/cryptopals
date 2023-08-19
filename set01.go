@@ -163,8 +163,21 @@ func AES128Encrypt(input []byte) {
 		return e
 	}
 
-	e := genExponents()
-	fmt.Printf("%x %d %d\n", e, len(e), cap(e))
+	exp := genExponents()
+	fmt.Printf("%x %d %d\n", exp, len(exp), cap(exp))
+	fmt.Println("")
+
+	genLog := func() []byte {
+		log := make([]byte, 0x100)
+		for i := byte(0); i < 0xFF; i++ {
+			log[exp[i]] = i
+		}
+		return log
+	}
+	log := genLog()
+
+	fmt.Println("")
+	fmt.Printf("%x %d %d\n", log, len(log), cap(log))
 
 	rotate := func(b []byte) []byte {
 		if len(b) != 4 {
