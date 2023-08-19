@@ -152,18 +152,19 @@ func AES128Encrypt(input []byte) {
 	}
 	_ = generator
 
-	row := byte(1)
-	for i := 0; i < (16*16)-1; i++ { // 255 -> 0x100
-		row = gMul(row, 0xe5)
+	genExponents := func() []byte {
+		e := make([]byte, 0, 0x100)
+		elem := byte(0x1)
+		e = append(e, 0x1)
+		for i := 0; i < 0xFF; i++ { // 255 -> 0x100
+			elem = gMul(elem, 0xe5)
+			e = append(e, elem)
+		}
+		return e
 	}
-	_ = row
-	fmt.Printf("%x\n", gMul(0xc7, 0xe5))
 
-	foo := byte(1)
-	for i := 0; i < 2; i++ {
-		foo = gMul(0x1, 0xe5)
-	}
-	fmt.Printf("%x\n", foo)
+	e := genExponents()
+	fmt.Printf("%x %d %d\n", e, len(e), cap(e))
 
 	rotate := func(b []byte) []byte {
 		if len(b) != 4 {
