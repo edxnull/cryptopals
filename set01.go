@@ -69,6 +69,7 @@ func AES128Encrypt(input []byte) {
 	// https://www.youtube.com/watch?v=O4xNJsjtN6E
 	// https://cybernews.com/resources/what-is-aes-encryption/
 	// https://www.cs.rit.edu/~spr/gdn2010/sticky.pdf
+	// https://crypto.stackexchange.com/questions/21173/how-to-calculate-aes-logarithm-table
 
 	// Rijndael's galois field only allows an 8 bit number
 	// (a number from 0 to 255) to fit in it. All mathematical
@@ -156,7 +157,7 @@ func AES128Encrypt(input []byte) {
 		e := make([]byte, 0, 0x100)
 		elem := byte(0x1)
 		e = append(e, 0x1)
-		for i := 0; i < 0xFF; i++ { // 255 -> 0x100
+		for i := 0; i < 0xFF; i++ {
 			elem = gMul(elem, 0xe5)
 			e = append(e, elem)
 		}
@@ -187,7 +188,9 @@ func AES128Encrypt(input []byte) {
 		return (log[a] - log[b]) % 255
 	}
 
-	_ = gDiv
+	gMulInverse := func(x byte) byte { return exp[255-log[x]] }
+
+	_, _ = gDiv, gMulInverse
 
 	rotate := func(b []byte) []byte {
 		if len(b) != 4 {
