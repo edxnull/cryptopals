@@ -177,8 +177,17 @@ func AES128Encrypt(input []byte) {
 
 	fmt.Printf("%x %d %d \n\n", log, len(log), cap(log))
 
-	gFastMul := func(a, b byte) byte { return exp[log[a]+log[b]] }
+	gFastMul := func(a, b byte) byte { return exp[(log[a]+log[b])%255] }
 	fmt.Printf("%x\n", gFastMul(0x03, 0x07))
+
+	gDiv := func(a, b byte) byte {
+		if a == 0x1 {
+			return 255 - log[b]
+		}
+		return (log[a] - log[b]) % 255
+	}
+
+	_ = gDiv
 
 	rotate := func(b []byte) []byte {
 		if len(b) != 4 {
