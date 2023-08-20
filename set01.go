@@ -214,7 +214,29 @@ func AES128Encrypt(input []byte) {
 		return x
 	}
 
-	fmt.Printf("%x\n", sBox(0x9a))
+	sBoxTable := make([]byte, 0, 0x100)
+	for x := byte(0); x < 0xFF; x++ {
+		sBoxTable = append(sBoxTable, sBox(x))
+	}
+	fmt.Printf("%x %d %d\n", sBoxTable, len(sBoxTable), cap(sBoxTable))
+
+	// 0xdb =>0x9f
+
+	for x := range sBoxTable {
+		if sBoxTable[x] == 0xdb {
+			fmt.Println(x)
+		}
+	}
+
+	// fmt.Printf("%x\n", gMul(0xdb, 0xdb))
+	// fmt.Printf("%x\n", sBox(0xdb))
+
+	sBoxInverseTable := make([]byte, 256)
+	for originalValue, substitutedValue := range sBoxTable {
+		inverseSBox[substitutedValue] = byte(originalValue)
+	}
+
+	fmt.Printf("%x\n", sBoxInverseTable)
 
 	rotate := func(b []byte) []byte {
 		if len(b) != 4 {
