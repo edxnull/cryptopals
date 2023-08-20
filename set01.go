@@ -199,9 +199,24 @@ func AES128Encrypt(input []byte) {
 	for x := byte(0); x < 0xFF; x++ {
 		testTable = append(testTable, gMulInverse(x))
 	}
+	// TODO: for some reason missing 1c at the end
 	fmt.Printf("%x %d %d\n", testTable, len(testTable), cap(testTable))
 
 	_, _ = gDiv, gMulInverse
+
+	sBox := func(b byte) byte {
+		s := gMulInverse(b)
+		x := s
+		for c := 0; c < 4; c++ {
+			s = (s << 1) | (s >> 7)
+			x ^= s
+		}
+
+		x ^= 99
+		return x
+	}
+
+	fmt.Printf("%x\n", sBox(0x9a))
 
 	rotate := func(b []byte) []byte {
 		if len(b) != 4 {
