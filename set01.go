@@ -112,9 +112,7 @@ func AES128Encrypt(input []byte) {
 		return c
 	}
 
-	gSbox := func() {}
-
-	_, _, _, _, _ = gAdd, gSub, gMul, gSbox, gRcon
+	_, _, _, _ = gAdd, gSub, gMul, gRcon
 	fmt.Println(gMul(byte(7), byte(3)))
 
 	generator := []byte{
