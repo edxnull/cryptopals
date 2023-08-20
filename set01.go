@@ -232,8 +232,8 @@ func AES128Encrypt(input []byte) {
 	// fmt.Printf("%x\n", sBox(0xdb))
 
 	sBoxInverseTable := make([]byte, 256)
-	for originalValue, substitutedValue := range sBoxTable {
-		sBoxInverseTable[substitutedValue] = byte(originalValue)
+	for original, substituted := range sBoxTable {
+		sBoxInverseTable[substituted] = byte(original)
 	}
 
 	fmt.Printf("%x\n", sBoxInverseTable)
