@@ -188,7 +188,18 @@ func AES128Encrypt(input []byte) {
 		return (log[a] - log[b]) % 255
 	}
 
-	gMulInverse := func(x byte) byte { return exp[255-log[x]] }
+	gMulInverse := func(x byte) byte {
+		if x == 0x0 {
+			return byte(0x0)
+		}
+		return exp[255-log[x]]
+	}
+
+	testTable := make([]byte, 0, 0x100)
+	for x := byte(0); x < 0xFF; x++ {
+		testTable = append(testTable, gMulInverse(x))
+	}
+	fmt.Printf("%x %d %d\n", testTable, len(testTable), cap(testTable))
 
 	_, _ = gDiv, gMulInverse
 
