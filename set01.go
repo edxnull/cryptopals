@@ -1,10 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"slices"
 )
 
 // Hex encoding and Base64 encoding
@@ -277,11 +277,9 @@ func AES128Encrypt(input []byte) {
 		{input: []byte{45, 38, 49, 76}, want: []byte{77, 126, 189, 248}},
 	}
 
-	fmt.Println(testVectors)
-
 	for i := range testVectors {
-		if want := gMixColumn(testVectors[i].input); 0 == bytes.Compare(want, testVectors[i].want) {
-			fmt.Println("gMixColumn bytes don't match:", want, testVectors[i].want)
+		if out := gMixColumn(testVectors[i].input); slices.Compare(out, testVectors[i].want) != 0 {
+			fmt.Println("gMixColumn bytes don't match:", out, testVectors[i].want)
 			panic("")
 		}
 	}
