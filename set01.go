@@ -250,16 +250,16 @@ func AES128Encrypt(input []byte) {
 			blocks[i], blocks[i], rotate(blocks[i]))
 	}
 
-	gMixColumn := func(b *byte) {
+	gMixColumn := func(b []byte) {
 		a := [4]byte{}
 		for i := 0; i < 4; i++ {
 			a[i] = b[i]
 		}
 
-		b[0] = gmul(a[0], 2) ^ gmul(a[3], 1) ^ gmul(a[2], 1) ^ gmul(a[1], 3)
-		b[1] = gmul(a[1], 2) ^ gmul(a[0], 1) ^ gmul(a[3], 1) ^ gmul(a[2], 3)
-		b[2] = gmul(a[2], 2) ^ gmul(a[1], 1) ^ gmul(a[0], 1) ^ gmul(a[3], 3)
-		b[3] = gmul(a[3], 2) ^ gmul(a[2], 1) ^ gmul(a[1], 1) ^ gmul(a[0], 3)
+		b[0] = gMul(a[0], 2) ^ gMul(a[3], 1) ^ gMul(a[2], 1) ^ gMul(a[1], 3)
+		b[1] = gMul(a[1], 2) ^ gMul(a[0], 1) ^ gMul(a[3], 1) ^ gMul(a[2], 3)
+		b[2] = gMul(a[2], 2) ^ gMul(a[1], 1) ^ gMul(a[0], 1) ^ gMul(a[3], 3)
+		b[3] = gMul(a[3], 2) ^ gMul(a[2], 1) ^ gMul(a[1], 1) ^ gMul(a[0], 3)
 	}
 
 	// KeyExpansion
