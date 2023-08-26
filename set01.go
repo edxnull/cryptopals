@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
@@ -250,16 +251,39 @@ func AES128Encrypt(input []byte) {
 			blocks[i], blocks[i], rotate(blocks[i]))
 	}
 
-	gMixColumn := func(b []byte) {
-		a := [4]byte{}
+	gMixColumn := func(b []byte) []byte {
+		a := make([]byte, 4)
 		for i := 0; i < 4; i++ {
 			a[i] = b[i]
 		}
+		r := make([]byte, 4)
+		r[0] = gMul(a[0], 2) ^ gMul(a[3], 1) ^ gMul(a[2], 1) ^ gMul(a[1], 3)
+		r[1] = gMul(a[1], 2) ^ gMul(a[0], 1) ^ gMul(a[3], 1) ^ gMul(a[2], 3)
+		r[2] = gMul(a[2], 2) ^ gMul(a[1], 1) ^ gMul(a[0], 1) ^ gMul(a[3], 3)
+		r[3] = gMul(a[3], 2) ^ gMul(a[2], 1) ^ gMul(a[1], 1) ^ gMul(a[0], 3)
 
-		b[0] = gMul(a[0], 2) ^ gMul(a[3], 1) ^ gMul(a[2], 1) ^ gMul(a[1], 3)
-		b[1] = gMul(a[1], 2) ^ gMul(a[0], 1) ^ gMul(a[3], 1) ^ gMul(a[2], 3)
-		b[2] = gMul(a[2], 2) ^ gMul(a[1], 1) ^ gMul(a[0], 1) ^ gMul(a[3], 3)
-		b[3] = gMul(a[3], 2) ^ gMul(a[2], 1) ^ gMul(a[1], 1) ^ gMul(a[0], 3)
+		return r
+	}
+
+	testVectors := []struct {
+		input []byte
+		want  []byte
+	}{
+		{input: []byte{219, 19, 83, 69}, want: []byte{142, 77, 161, 188}},
+		{input: []byte{242, 10, 34, 92}, want: []byte{159, 220, 88, 157}},
+		{input: []byte{1, 1, 1, 1}, want: []byte{1, 1, 1, 1}},
+		{input: []byte{198, 198, 198, 198}, want: []byte{198, 198, 198, 198}},
+		{input: []byte{212, 212, 212, 213}, want: []byte{213, 213, 215, 214}},
+		{input: []byte{45, 38, 49, 76}, want: []byte{77, 126, 189, 248}},
+	}
+
+	fmt.Println(testVectors)
+
+	for i := range testVectors {
+		if want := gMixColumn(testVectors[i].input); 0 == bytes.Compare(want, testVectors[i].want) {
+			fmt.Println("gMixColumn bytes don't match:", want, testVectors[i].want)
+			panic("")
+		}
 	}
 
 	// KeyExpansion
