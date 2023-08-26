@@ -297,21 +297,9 @@ func AES128Encrypt(input []byte) {
 		return r
 	}
 
-	testVectorsInvert := []struct {
-		input []byte
-		want  []byte
-	}{
-		{want: []byte{219, 19, 83, 69}, input: []byte{142, 77, 161, 188}},
-		{want: []byte{242, 10, 34, 92}, input: []byte{159, 220, 88, 157}},
-		{want: []byte{1, 1, 1, 1}, input: []byte{1, 1, 1, 1}},
-		{want: []byte{198, 198, 198, 198}, input: []byte{198, 198, 198, 198}},
-		{want: []byte{212, 212, 212, 213}, input: []byte{213, 213, 215, 214}},
-		{want: []byte{45, 38, 49, 76}, input: []byte{77, 126, 189, 248}},
-	}
-
-	for i := range testVectorsInvert {
-		if out := gInvMixColumn(testVectorsInvert[i].input); slices.Compare(out, testVectorsInvert[i].want) != 0 {
-			fmt.Println("gMixColumn bytes don't match:", out, testVectorsInvert[i].want)
+	for i := range testVectors {
+		if out := gInvMixColumn(testVectors[i].want); slices.Compare(out, testVectors[i].input) != 0 {
+			fmt.Println("gMixColumn bytes don't match:", out, testVectors[i].input)
 			panic("")
 		}
 	}
