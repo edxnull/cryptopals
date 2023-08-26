@@ -284,6 +284,38 @@ func AES128Encrypt(input []byte) {
 		}
 	}
 
+	gInvMixColumn := func(b []byte) []byte {
+		a := make([]byte, 4)
+		for i := 0; i < 4; i++ {
+			a[i] = b[i]
+		}
+		r := make([]byte, 4)
+		r[0] = gMul(a[0], 14) ^ gMul(a[3], 9) ^ gMul(a[2], 13) ^ gMul(a[1], 11)
+		r[1] = gMul(a[1], 14) ^ gMul(a[0], 9) ^ gMul(a[3], 13) ^ gMul(a[2], 11)
+		r[2] = gMul(a[2], 14) ^ gMul(a[1], 9) ^ gMul(a[0], 13) ^ gMul(a[3], 11)
+		r[3] = gMul(a[3], 14) ^ gMul(a[2], 9) ^ gMul(a[1], 13) ^ gMul(a[0], 11)
+		return r
+	}
+
+	testVectorsInvert := []struct {
+		input []byte
+		want  []byte
+	}{
+		{want: []byte{219, 19, 83, 69}, input: []byte{142, 77, 161, 188}},
+		{want: []byte{242, 10, 34, 92}, input: []byte{159, 220, 88, 157}},
+		{want: []byte{1, 1, 1, 1}, input: []byte{1, 1, 1, 1}},
+		{want: []byte{198, 198, 198, 198}, input: []byte{198, 198, 198, 198}},
+		{want: []byte{212, 212, 212, 213}, input: []byte{213, 213, 215, 214}},
+		{want: []byte{45, 38, 49, 76}, input: []byte{77, 126, 189, 248}},
+	}
+
+	for i := range testVectorsInvert {
+		if out := gInvMixColumn(testVectorsInvert[i].input); slices.Compare(out, testVectorsInvert[i].want) != 0 {
+			fmt.Println("gMixColumn bytes don't match:", out, testVectorsInvert[i].want)
+			panic("")
+		}
+	}
+
 	// KeyExpansion
 	// SubBytes
 	// ShiftRows
