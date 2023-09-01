@@ -304,6 +304,18 @@ func AES128Encrypt(input []byte) {
 		}
 	}
 
+	gScheduleCore := func(b []byte, i byte) []byte {
+		var a byte
+
+		rotate(b)
+		for x := 0; x < 4; x++ {
+			b[a] = sbox(b[a])
+		}
+		b[0] ^= rcon(i)
+
+		return b
+	}
+
 	// KeyExpansion
 	// SubBytes
 	// ShiftRows
