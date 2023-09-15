@@ -309,12 +309,13 @@ func AES128Encrypt(input []byte) {
 
 		rotate(b)
 		for x := 0; x < 4; x++ {
-			b[a] = sbox(b[a])
+			b[a] = sBox(b[a])
 		}
-		b[0] ^= rcon(i)
+		b[0] ^= gRcon(i)
 
 		return b
 	}
+	_ = gScheduleCore
 
 	TestExpand128BitKey := []struct {
 		input  []byte
@@ -411,6 +412,7 @@ func AES128Encrypt(input []byte) {
 			},
 		},
 	}
+	_ = TestExpand128BitKey
 
 	// KeyExpansion
 	// SubBytes
