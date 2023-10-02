@@ -306,7 +306,6 @@ func AES128Encrypt(input []byte) {
 
 	gScheduleCore := func(b []byte, i byte) []byte {
 		res := slices.Clone(b)
-		print(len(res), cap(res))
 		rotate(res)
 		for x := 0; x < 4; x++ {
 			res[x] = sBox(res[x])
@@ -315,7 +314,6 @@ func AES128Encrypt(input []byte) {
 
 		return res
 	}
-	_ = gScheduleCore
 
 	TestExpand128BitKey := []struct {
 		input  []byte
@@ -417,17 +415,19 @@ func AES128Encrypt(input []byte) {
 	gExpandKey := func(b []byte) []byte {
 		var i byte = 1
 		var c byte = 16
-		t := make([]byte, 20)
-		in := slices.Clone(b)
+		t := make([]byte, 4)
+		in := make([]byte, 200)
+		copy(in, b)
 		for c < 176 {
 			for a := byte(0); a < 4; a++ {
 				t[a] = in[a+c-4]
+				fmt.Print(t[a])
 			}
 			if c%16 == 0 {
 				gScheduleCore(t, i)
 				i++
 			}
-			for a := byte(0); a < 4; a++ {
+			for a := 0; a < 4; a++ {
 				in[c] = in[c-16] ^ t[a]
 				c++
 			}
@@ -437,7 +437,6 @@ func AES128Encrypt(input []byte) {
 
 	out := gExpandKey(TestExpand128BitKey[0].input)
 	fmt.Println(out)
-	fmt.Println(TestExpand128BitKey[0].output)
 }
 
 func main() {
