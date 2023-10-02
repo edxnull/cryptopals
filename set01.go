@@ -416,15 +416,14 @@ func AES128Encrypt(input []byte) {
 		var i byte = 1
 		var c byte = 16
 		t := make([]byte, 4)
-		in := make([]byte, 200)
+		in := make([]byte, 176)
 		copy(in, b)
 		for c < 176 {
 			for a := byte(0); a < 4; a++ {
 				t[a] = in[a+c-4]
-				fmt.Print(t[a])
 			}
 			if c%16 == 0 {
-				gScheduleCore(t, i)
+				t = gScheduleCore(t, i)
 				i++
 			}
 			for a := 0; a < 4; a++ {
@@ -435,8 +434,11 @@ func AES128Encrypt(input []byte) {
 		return in
 	}
 
-	out := gExpandKey(TestExpand128BitKey[0].input)
-	fmt.Println(out)
+	if out := gExpandKey(TestExpand128BitKey[0].input); slices.Compare(out, TestExpand128BitKey[0].output) != 0 {
+		fmt.Println(out)
+		fmt.Println(len(out), len(TestExpand128BitKey[0].output))
+		panic("gExpandKey out does not match")
+	}
 }
 
 func main() {
