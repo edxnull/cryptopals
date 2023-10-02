@@ -433,11 +433,13 @@ func AES128Encrypt(input []byte) {
 		return in
 	}
 
-	if out := gExpandKey(TestExpand128BitKey[0].input); slices.Compare(out, TestExpand128BitKey[0].output) != 0 {
-		fmt.Println(out)
-		fmt.Println(TestExpand128BitKey[0].output)
-		fmt.Println(len(out), len(TestExpand128BitKey[0].output))
-		panic("gExpandKey out does not match")
+	for i := range TestExpand128BitKey {
+		if out := gExpandKey(TestExpand128BitKey[i].input); slices.Compare(out, TestExpand128BitKey[i].output) != 0 {
+			fmt.Println(out)
+			fmt.Println(TestExpand128BitKey[i].output)
+			fmt.Println(len(out), len(TestExpand128BitKey[i].output))
+			panic("gExpandKey out does not match")
+		}
 	}
 }
 
