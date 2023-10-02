@@ -241,7 +241,7 @@ func AES128Encrypt(input []byte) {
 
 	rotate := func(b []byte) []byte {
 		if len(b) != 4 {
-			panic("invalid length block")
+			panic("rotate: invalid length block")
 		}
 		return []byte{0: b[1], 1: b[2], 2: b[3], 3: b[0]}
 	}
@@ -305,15 +305,15 @@ func AES128Encrypt(input []byte) {
 	}
 
 	gScheduleCore := func(b []byte, i byte) []byte {
-		var a byte
-
-		rotate(b)
+		res := slices.Clone(b)
+		print(len(res), cap(res))
+		rotate(res)
 		for x := 0; x < 4; x++ {
-			b[a] = sBox(b[a])
+			res[x] = sBox(res[x])
 		}
-		b[0] ^= gRcon(i)
+		res[0] ^= gRcon(i)
 
-		return b
+		return res
 	}
 	_ = gScheduleCore
 
@@ -414,11 +414,30 @@ func AES128Encrypt(input []byte) {
 	}
 	_ = TestExpand128BitKey
 
-	// KeyExpansion
-	// SubBytes
-	// ShiftRows
-	// MixColumns
-	// AddRoundKey
+	gExpandKey := func(b []byte) []byte {
+		var i byte = 1
+		var c byte = 16
+		t := make([]byte, 20)
+		in := slices.Clone(b)
+		for c < 176 {
+			for a := byte(0); a < 4; a++ {
+				t[a] = in[a+c-4]
+			}
+			if c%16 == 0 {
+				gScheduleCore(t, i)
+				i++
+			}
+			for a := byte(0); a < 4; a++ {
+				in[c] = in[c-16] ^ t[a]
+				c++
+			}
+		}
+		return in
+	}
+
+	out := gExpandKey(TestExpand128BitKey[0].input)
+	fmt.Println(out)
+	fmt.Println(TestExpand128BitKey[0].output)
 }
 
 func main() {
