@@ -296,7 +296,6 @@ func TestAES128Encrypt(t *testing.T) {
 //
 // https://cryptopals.com/sets/1/challenges/8
 // https://cryptopals.com/static/challenge-data/8.txt
-//
 func TestDetectAESinECBMode(t *testing.T) {
 	f, err := os.Open("8.txt")
 	if err != nil {
