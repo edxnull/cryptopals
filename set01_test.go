@@ -303,25 +303,54 @@ func TestDetectAESinECBMode(t *testing.T) {
 	}
 	defer f.Close()
 
-	//_data, _ := io.ReadAll(f)
-	//deHexed, _ := hex.DecodeString(string(data))
-	//if err != nil {
-	//	t.Fatalf("%s", err)
-	//}
-	//_ = deHexed
-
 	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		hexDec, _ := hex.DecodeString(scanner.Text())
-		fmt.Printf("%x\n", hexDec)
-	}
-	// bsize := aes.BlockSize
-	// decrypted := make([]byte, len(data))
-	// for i := 0; i < len(deHexed); i += aes.BlockSize {
-	//     cipher, _ := aes.NewCipher([]byte(deHexed[i:bsize]))
-	//     cipher.Decrypt(decrypted[i:bsize], data[i:bsize])
-	//     bsize += aes.BlockSize
-	// }
 
-	// fmt.Printf("%s", decrypted)
+	nlines := func() int {
+		d, _ := io.ReadAll(f)
+		return bytes.Count(d, []byte{'\n'})
+	}
+
+	allCiphers := func() [][]byte {
+		d, _ := io.ReadAll(f)
+		end := aes.BlockSize
+		allBlocks := make([][]byte, 0, nlines())
+		for start := 0; start < len(d); start += aes.BlockSize {
+			allBlocks = append(allBlocks, d[start:end])
+			end += aes.BlockSize
+		}
+		return allBlocks
+	}()
+
+	fmt.Println(allCiphers[0])
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		hexDec, err := hex.DecodeString(line)
+		if err != nil {
+			fmt.Errorf("%w", err)
+		}
+
+		end := aes.BlockSize
+
+		for start := 0; start < len(line); start += aes.BlockSize {
+
+			fmt.Printf("%s => %d\n", hexDec[start:end], len(hexDec[start:end]))
+
+			end += aes.BlockSize
+
+			// TODO: and here we should go through all of the
+			// lines and check if we can find a secret key
+		}
+		break
+
+		// decrypted := make([]byte, len(hexDec))
+		// //cipher, _ := aes.NewCipher([]byte("YELLOW SUBMARINE"))
+		// cipher, _ := aes.NewCipher([]byte(hexDec[0:16]))
+		// for start := 0; start < len(hexDec); start += aes.BlockSize {
+		// 	cipher.Decrypt(decrypted[start:end], hexDec[start:end])
+		// 	//fmt.Printf("dec len : %d, hexdec len : %d\n", len(decrypted), len(hexDec))
+		// 	end += aes.BlockSize
+		// }
+		// fmt.Printf("%s", decrypted)
+	}
 }
