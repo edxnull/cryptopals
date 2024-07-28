@@ -305,15 +305,11 @@ func TestDetectAESinECBMode(t *testing.T) {
 
 	scanner := bufio.NewScanner(f)
 
-	nlines := func() int {
-		d, _ := io.ReadAll(f)
-		return bytes.Count(d, []byte{'\n'})
-	}
-
 	allCiphers := func() [][]byte {
 		d, _ := io.ReadAll(f)
 		end := aes.BlockSize
-		allBlocks := make([][]byte, 0, nlines())
+		nlines := bytes.Count(d, []byte{'\n'})
+		allBlocks := make([][]byte, 0, nlines)
 		for start := 0; start < len(d); start += aes.BlockSize {
 			allBlocks = append(allBlocks, d[start:end])
 			end += aes.BlockSize
