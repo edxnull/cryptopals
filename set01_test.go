@@ -329,8 +329,7 @@ func TestDetectAESinECBMode(t *testing.T) {
 		return allBlocks
 	}()
 
-	_, err = f.Seek(0, io.SeekStart)
-	if err != nil {
+	if _, err = f.Seek(0, io.SeekStart); err != nil {
 		fmt.Println(err)
 	}
 
