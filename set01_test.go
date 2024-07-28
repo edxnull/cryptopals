@@ -307,7 +307,6 @@ func TestDetectAESinECBMode(t *testing.T) {
 
 	allCiphers := func() [][]byte {
 		d, _ := io.ReadAll(f)
-		end := aes.BlockSize
 
 		list := bytes.Split(d, []byte("\n"))
 
@@ -320,6 +319,7 @@ func TestDetectAESinECBMode(t *testing.T) {
 			b.Write(hx)
 		}
 
+		end := aes.BlockSize
 		nlines := bytes.Count(d, []byte{'\n'})
 		allBlocks := make([][]byte, 0, nlines)
 		for start := 0; start < b.Len(); start += aes.BlockSize {
