@@ -308,16 +308,33 @@ func TestDetectAESinECBMode(t *testing.T) {
 	allCiphers := func() [][]byte {
 		d, _ := io.ReadAll(f)
 		end := aes.BlockSize
+
+		list := bytes.Split(d, []byte("\n"))
+
+		var b bytes.Buffer
+		for _, line := range list {
+			hx, err := hex.DecodeString(string(line))
+			if err != nil {
+				fmt.Println(err)
+			}
+			b.Write(hx)
+		}
+
 		nlines := bytes.Count(d, []byte{'\n'})
 		allBlocks := make([][]byte, 0, nlines)
-		for start := 0; start < len(d); start += aes.BlockSize {
-			allBlocks = append(allBlocks, d[start:end])
+		for start := 0; start < b.Len(); start += aes.BlockSize {
+			allBlocks = append(allBlocks, b.Bytes()[start:end])
 			end += aes.BlockSize
 		}
 		return allBlocks
 	}()
 
-	fmt.Println(allCiphers[0])
+	_, err = f.Seek(0, io.SeekStart)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(len(allCiphers[0]))
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -337,7 +354,6 @@ func TestDetectAESinECBMode(t *testing.T) {
 			// TODO: and here we should go through all of the
 			// lines and check if we can find a secret key
 		}
-		break
 
 		// decrypted := make([]byte, len(hexDec))
 		// //cipher, _ := aes.NewCipher([]byte("YELLOW SUBMARINE"))
@@ -349,4 +365,5 @@ func TestDetectAESinECBMode(t *testing.T) {
 		// }
 		// fmt.Printf("%s", decrypted)
 	}
+	fmt.Println("done")
 }
