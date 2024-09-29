@@ -317,19 +317,28 @@ func TestDetectAESinECBMode(t *testing.T) {
 			b.Write(hx)
 		}
 
+		m := make(map[string]int32)
 		end := aes.BlockSize
 		nlines := bytes.Count(d, []byte{'\n'})
 		allBlocks := make([][]byte, 0, nlines)
 		for start := 0; start < b.Len(); start += aes.BlockSize {
+			s := string(b.Bytes()[start:end])
+			if _, ok := m[s]; !ok {
+				m[s] = 0
+			} else {
+				fmt.Println("got here")
+				m[s] += 1
+			}
 			allBlocks = append(allBlocks, b.Bytes()[start:end])
 			end += aes.BlockSize
+		}
+		for k, v := range m {
+			if v > 1 {
+				fmt.Printf("%x=>%d\n", k, v)
+			}
 		}
 		return allBlocks
 	}()
 
-	if _, err = f.Seek(0, io.SeekStart); err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println(len(allCiphers[0]))
+	fmt.Println(len(allCiphers))
 }
