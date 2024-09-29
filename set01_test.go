@@ -326,7 +326,6 @@ func TestDetectAESinECBMode(t *testing.T) {
 			if _, ok := m[s]; !ok {
 				m[s] = 0
 			} else {
-				fmt.Println("got here")
 				m[s] += 1
 			}
 			allBlocks = append(allBlocks, b.Bytes()[start:end])
@@ -334,7 +333,7 @@ func TestDetectAESinECBMode(t *testing.T) {
 		}
 		for k, v := range m {
 			if v > 1 {
-				fmt.Printf("%x=>%d\n", k, v)
+				fmt.Printf("candidate: %x => %d\n", k, v)
 			}
 		}
 		return allBlocks
