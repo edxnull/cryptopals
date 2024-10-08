@@ -303,7 +303,7 @@ func TestDetectAESinECBMode(t *testing.T) {
 	}
 	defer f.Close()
 
-	allCiphers := func() [][]byte {
+	allCiphers := func() (candidate string, allBlocks [][]byte) {
 		d, _ := io.ReadAll(f)
 
 		list := bytes.Split(d, []byte("\n"))
@@ -319,8 +319,8 @@ func TestDetectAESinECBMode(t *testing.T) {
 
 		m := make(map[string]int32)
 		end := aes.BlockSize
-		nlines := bytes.Count(d, []byte{'\n'})
-		allBlocks := make([][]byte, 0, nlines)
+		//nlines := bytes.Count(d, []byte{'\n'})
+		allBlocks = make([][]byte, 0, 100)
 		for start := 0; start < b.Len(); start += aes.BlockSize {
 			s := string(b.Bytes()[start:end])
 			if _, ok := m[s]; !ok {
@@ -334,10 +334,41 @@ func TestDetectAESinECBMode(t *testing.T) {
 		for k, v := range m {
 			if v > 1 {
 				fmt.Printf("candidate: %x => %d\n", k, v)
+				candidate = k
 			}
 		}
-		return allBlocks
-	}()
 
-	fmt.Println(len(allCiphers))
+		return candidate, allBlocks
+	}
+
+	candidate, allBlocks := allCiphers()
+
+	joinedBlocks := bytes.Join(allBlocks, []byte(""))
+	//decrypted := make([]byte, len(joinedBlocks))
+
+	candidateBlock, err := aes.NewCipher([]byte(candidate))
+	if err != nil {
+		panic(err)
+	}
+
+	//dec := cipher.NewCBCDecrypter(candidateBlock, joinedBlocks[:aes.BlockSize])
+	//dec.CryptBlocks(joinedBlocks, joinedBlocks)
+	decrypted := make([]byte, len(joinedBlocks))
+
+	end := aes.BlockSize
+	for start := 0; start < len(joinedBlocks); start += aes.BlockSize {
+		candidateBlock.Decrypt(decrypted[start:end], joinedBlocks[start:end])
+		end += aes.BlockSize
+	}
+
+	// UK(@ae�g�mo$�+
+	fmt.Printf("%s\n", decrypted)
+
+	//for _, block := range allBlocks {
+	//	dec := cipher.NewCBCDecrypter(candidateBlock, block)
+	//	dec.CryptBlocks(block, block)
+
+	//	fmt.Printf("%s\n", decrypted)
+	//}
+	//fmt.Println(len(decrypted))
 }
