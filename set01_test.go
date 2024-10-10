@@ -303,85 +303,31 @@ func TestDetectAESinECBMode(t *testing.T) {
 	}
 	defer f.Close()
 
-	allCiphers := func() (candidate string, allBlocks [][]byte) {
-		d, _ := io.ReadAll(f)
-
-		list := bytes.Split(d, []byte("\n"))
-
-		var b bytes.Buffer
-		for i, line := range list {
-			hx, err := hex.DecodeString(string(line))
-			if err != nil {
-				fmt.Println(err)
-			}
-			// 132 => d880619740a8a19b7840a8a31c810a3d08649af70dc06f4fd5d2d69c744cd283e2dd052f6b641dbf9d11b0348542bb5708649af70dc06f4fd5d2d69c744cd2839475c9dfdbc1d46597949d9c7e82bf5a08649af70dc06f4fd5d2d69c744cd28397a93eab8d6aecd566489154789a6b0308649af70dc06f4fd5d2d69c744cd283d403180c98c8f6db1f2a3f9c4040deb0ab51b29933f2c123c58386b06fba186a
-			//fmt.Printf("%d => %x\n", i, hx)
-			b.Write(hx)
-		}
-
-		m := make(map[string]int32)
-		end := aes.BlockSize
-		nlines := bytes.Count(d, []byte{'\n'})
-		allBlocks = make([][]byte, 0, nlines)
-		for start := 0; start < b.Len(); start += aes.BlockSize {
-			s := string(b.Bytes()[start:end])
-			if _, ok := m[s]; !ok {
-				m[s] = 0
-			} else {
-				m[s] += 1
-			}
-			allBlocks = append(allBlocks, b.Bytes()[start:end])
-			end += aes.BlockSize
-		}
-		for k, v := range m {
-			if v > 1 {
-				fmt.Printf("candidate: %x => %d\n", k, v)
-				candidate = k
-			}
-		}
-
-		return candidate, allBlocks
-	}
-
-	candidate, allBlocks := allCiphers()
-
-	joinedBlocks := bytes.Join(allBlocks, []byte(""))
-	_ = joinedBlocks
-	// candidate: 08649af70dc06f4fd5d2d69c744cd283 => 3
-
-	candidateBlock, err := aes.NewCipher([]byte(candidate))
+	d, err := io.ReadAll(f)
 	if err != nil {
 		panic(err)
 	}
 
-	//end := aes.BlockSize
-	decrypted := make([]byte, len(allBlocks))
-	//for start := 0; start < len(joinedBlocks); start += aes.BlockSize {
-	//	candidateBlock.Decrypt(decrypted[start:end], joinedBlocks[start:end])
-	//	end += aes.BlockSize
-	//}
-	//fmt.Printf("%s\n", decrypted)
-
-	fmt.Printf("%c\n", []byte(candidate))
-
-	for _, block := range allBlocks {
-		//dec := cipher.NewCBCDecrypter(candidateBlock, block)
-		//dec.CryptBlocks(block, block)
-		//num := bytes.Count(joinedBlocks, block)
-		//fmt.Printf("%x => %d \n", block, num)
-		candidateBlock.Decrypt(decrypted, block)
-		//fmt.Printf("%s\n", decrypted)
+	list := bytes.Split(d, []byte("\n"))
+	hexes := make([][]byte, len(list))
+	for _, line := range list {
+		hx, err := hex.DecodeString(string(line))
+		if err != nil {
+			fmt.Println(err)
+		}
+		hexes = append(hexes, hx)
 	}
 
-	// ??? is this it ???
-	// 08649af70dc06f4fd5d2d69c744cd283 => 4
-	// e2dd052f6b641dbf9d11b0348542bb57 => 1
-	// 08649af70dc06f4fd5d2d69c744cd283 => 4
-	// 9475c9dfdbc1d46597949d9c7e82bf5a => 1
-	// 08649af70dc06f4fd5d2d69c744cd283 => 4
-	// 97a93eab8d6aecd566489154789a6b03 => 1
-	// 08649af70dc06f4fd5d2d69c744cd283 => 4
-	//
-	// NOTE: line 132 is the line that has all these hexes and our 08649af70dc06f4fd5d2d69c744cd283
-	fmt.Println(len(decrypted))
+	for i, hx := range hexes {
+		end := aes.BlockSize
+		for start := 0; start < len(hx); start += aes.BlockSize {
+			count := bytes.Count(hx, hx[start:end])
+			if count > 1 {
+				fmt.Printf("candidate block is => %x => count(%d)\n", hx[start:end], count)
+				fmt.Printf("lineNr: %d => %x\n", i, hx)
+				break
+			}
+			end += aes.BlockSize
+		}
+	}
 }
