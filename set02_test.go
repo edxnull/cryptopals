@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"crypto/aes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"reflect"
@@ -131,4 +132,34 @@ func TestCBCDecrypt(t *testing.T) {
 	if !reflect.DeepEqual(plaintext, out) {
 		t.Fatalf("wrong result: want '%s'\nbut got '%s'", plaintext, out)
 	}
+
+	// NOTE: use on a line from 10.txt
+	lines := []string{
+		"CRIwqt4+szDbqkNY+I0qbNXPg1XLaCM5etQ5Bt9DRFV/xIN2k8Go7jtArLIy",
+		"zgEaE4+BDoEqbv/rYMuaeOuBIkVchmzXwlpPORwbN0/RUL89xwOJKCQQZM8B",
+		"1YsYOqeL3HGxKfpFo7kmArXSRKRHToXuBgDq07KS/jxaS1a1Paz/tvYHjLxw",
+		"Y0Ot3kS+cnBeq/FGSNL/fFV3J2a8eVvydsKat3XZS3WKcNNjY2ZEY1rHgcGL",
+		"5bhVHs67bxb/IGQleyY+EwLuv5eUwS3wljJkGcWeFhlqxNXQ6NDTzRNlBS0W",
+		"4CkNiDBMegCcOlPKC2ZLGw2ejgr2utoNfmRtehr+3LAhLMVjLyPSRQ/zDhHj",
+		"Xu+Kmt4elmTmqLgAUskiOiLYpr0zI7Pb4xsEkcxRFX9rKy5WV7NhJ1lR7BKy",
+		"alO94jWIL4kJmh4GoUEhO+vDCNtW49PEgQkundV8vmzxKarUHZ0xr4feL1ZJ",
+		"THinyUs/KUAJAZSAQ1Zx/S4dNj1HuchZzDDm/nE/Y3DeDhhNUwpggmesLDxF",
+		"tqJJ/BRn8cgwM6/SMFDWUnhkX/t8qJrHphcxBjAmIdIWxDi2d78LA6xhEPUw",
+	}
+
+	data, err := base64.StdEncoding.DecodeString(lines[0])
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	data, err = pkcs7(data, aes.BlockSize)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	inCipherText, err := decCBC(key, data)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%s\n", inCipherText)
 }
