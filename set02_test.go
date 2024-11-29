@@ -91,19 +91,19 @@ func decCBC(key []byte, cipherText []byte) ([]byte, error) {
 
 	iv := bytes.Repeat([]byte{byte(0x0)}, len(cipherText)) // noop?
 	plain := FixedXOR(plainText, iv)
+	plen := len(plain)
 
 	// clear padding
 	padCount := 0
-	padChar := plain[len(plain)-1:][0]
-	for x := len(plain) - 1; x > 0; x-- {
+	padChar := plain[plen-1:][0]
+	for x := plen - 1; x > 0; x-- {
 		if padChar == plain[x] {
 			padCount++
 		} else {
 			break
 		}
 	}
-
-	return plain[:len(plain)-padCount], nil
+	return plain[:plen-padCount], nil
 }
 
 func TestCBCEncrypt(t *testing.T) {
