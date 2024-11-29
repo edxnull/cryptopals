@@ -13,6 +13,9 @@ func pkcs7(s []byte, bsize int) ([]byte, error) {
 	if bsize >= 256 {
 		return []byte{}, errors.New("bsize length should be <256")
 	}
+	if len(s) == bsize {
+		return s, nil
+	}
 	slen := len(s)
 	pad := bsize - (slen % bsize)
 	m := make([]byte, slen+pad)
@@ -27,6 +30,8 @@ func TestPKCS7(t *testing.T) {
 		want  []byte
 		bsize int
 	}{
+		{in: []byte("no"), want: []byte("no\x01"), bsize: 3},
+		{in: []byte("no"), want: []byte("no"), bsize: 2},
 		{in: []byte("barbaz"), want: []byte("barbaz\x02\x02"), bsize: 8},
 		{in: []byte("ok"), want: []byte("ok\x08\x08\x08\x08\x08\x08\x08\x08"), bsize: 10},
 		{in: []byte("YELLOW"), want: []byte("YELLOW\x04\x04\x04\x04"), bsize: 10},
