@@ -106,5 +106,7 @@ func TestCBCDecrypt(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("%s\n", out)
+	if !reflect.DeepEqual(plaintext, out) {
+		t.Fatalf("wrong result: want '%s'\nbut got '%s'", plaintext, out)
+	}
 }
