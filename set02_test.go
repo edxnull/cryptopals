@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"crypto/aes"
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -37,4 +39,72 @@ func TestPKCS7(t *testing.T) {
 			t.Fatalf("wrong result: want '%d'\nbut got '%d'", tc.want, out)
 		}
 	}
+}
+
+func encCBC(key []byte, plaintext []byte) ([]byte, error) {
+	cipher, err := aes.NewCipher(key)
+	if err != nil {
+		return []byte{}, err
+	}
+	// NOTE: will probably fail if len < blocksize
+	cipherText := make([]byte, len(plaintext))
+	//for i, text := range plaintext {
+	//fmt.Println(i, text)
+	var blockCipher []byte
+	//if i == 0 {
+	iv := bytes.Repeat([]byte{byte(0x0)}, len(plaintext)) // noop?
+	blockCipher = FixedXOR(plaintext, iv)
+	//} else {
+	//	blockCipher = FixedXOR(plaintext, cipherText)
+	//}
+
+	end := aes.BlockSize
+	for start := 0; start < len(plaintext); start += aes.BlockSize {
+		cipher.Encrypt(cipherText[start:end], blockCipher[start:end])
+		end += aes.BlockSize
+	}
+	//}
+	return cipherText, nil
+}
+
+func decCBC(key []byte, cipherText []byte) ([]byte, error) {
+	cipher, err := aes.NewCipher(key)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	plainText := make([]byte, len(cipherText))
+
+	end := aes.BlockSize
+	for start := 0; start < len(cipherText); start += aes.BlockSize {
+		cipher.Decrypt(plainText[start:end], cipherText[start:end])
+		end += aes.BlockSize
+	}
+
+	iv := bytes.Repeat([]byte{byte(0x0)}, len(cipherText)) // noop?
+	return FixedXOR(plainText, iv), nil
+}
+
+func TestCBCEncrypt(t *testing.T) {
+	key := []byte("YELLOW SUBMARINE")
+	plaintext := []byte("this should be!!")
+	cipherText, err := encCBC(key, plaintext)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%s\n", cipherText)
+}
+
+func TestCBCDecrypt(t *testing.T) {
+	key := []byte("YELLOW SUBMARINE")
+	plaintext := []byte("this should be!!")
+	cipherText, err := encCBC(key, plaintext)
+	if err != nil {
+		fmt.Println(err)
+	}
+	out, err := decCBC(key, cipherText)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%s\n", out)
 }
