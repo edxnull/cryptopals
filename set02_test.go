@@ -51,7 +51,10 @@ func encCBC(key []byte, plaintext []byte) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-	// NOTE: will probably fail if len < blocksize
+	plaintext, err = pkcs7(plaintext, aes.BlockSize)
+	if err != nil {
+		fmt.Println(err)
+	}
 	cipherText := make([]byte, len(plaintext))
 	//for i, text := range plaintext {
 	//fmt.Println(i, text)
@@ -87,12 +90,25 @@ func decCBC(key []byte, cipherText []byte) ([]byte, error) {
 	}
 
 	iv := bytes.Repeat([]byte{byte(0x0)}, len(cipherText)) // noop?
-	return FixedXOR(plainText, iv), nil
+	plain := FixedXOR(plainText, iv)
+
+	// clear padding
+	padCount := 0
+	padChar := plain[len(plain)-1:][0]
+	for x := len(plain) - 1; x > 0; x-- {
+		if padChar == plain[x] {
+			padCount++
+		} else {
+			break
+		}
+	}
+
+	return plain[:len(plain)-padCount], nil
 }
 
 func TestCBCEncrypt(t *testing.T) {
 	key := []byte("YELLOW SUBMARINE")
-	plaintext := []byte("this should be!!")
+	plaintext := []byte("this should be!!!!!!")
 	cipherText, err := encCBC(key, plaintext)
 	if err != nil {
 		fmt.Println(err)
@@ -102,7 +118,7 @@ func TestCBCEncrypt(t *testing.T) {
 
 func TestCBCDecrypt(t *testing.T) {
 	key := []byte("YELLOW SUBMARINE")
-	plaintext := []byte("this should be!!")
+	plaintext := []byte("this should be!!!!!!")
 	cipherText, err := encCBC(key, plaintext)
 	if err != nil {
 		fmt.Println(err)
@@ -111,6 +127,7 @@ func TestCBCDecrypt(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
+
 	if !reflect.DeepEqual(plaintext, out) {
 		t.Fatalf("wrong result: want '%s'\nbut got '%s'", plaintext, out)
 	}
