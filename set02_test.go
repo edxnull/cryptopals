@@ -57,3 +57,21 @@ func TestCBCDecrypt(t *testing.T) {
 		t.Fatalf("wrong result: want '%s'\nbut got '%s'", want, out)
 	}
 }
+
+func TestCBCDecAfterEnc(t *testing.T) {
+	key := []byte("YELLOW SUBMARINE")
+
+	data, err := base64DecodeFile("10.txt")
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	dec, _ := decCBC(key, data)
+	enc, _ := encCBC(key, dec)
+	out, _ := decCBC(key, enc)
+
+	want := []byte("VIP. Vanilla Ice yep, yep, I'm comin' hard like a rhino ")
+	if !bytes.Contains(out, want) {
+		t.Fatalf("wrong result: want '%s'\nbut got '%s'", want, out)
+	}
+}
