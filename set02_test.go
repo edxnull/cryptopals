@@ -75,7 +75,7 @@ func encCBC(key []byte, plaintext []byte) ([]byte, error) {
 	return cipherText, nil
 }
 
-func decCBCBlock(key []byte, cipherText []byte) ([]byte, error) {
+func decCBC(key []byte, cipherText []byte) ([]byte, error) {
 	cipher, err := aes.NewCipher(key)
 	if err != nil {
 		return []byte{}, err
@@ -99,53 +99,6 @@ func decCBCBlock(key []byte, cipherText []byte) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-func decCBC(key []byte, cipherText [][]byte) ([][]byte, error) {
-	cipher, err := aes.NewCipher(key)
-	if err != nil {
-		return [][]byte{}, err
-	}
-
-	plainText := make([][]byte, len(cipherText))
-
-	var plain []byte
-	for i, ptext := range cipherText {
-		ptext, err = pkcs7(ptext, aes.BlockSize)
-		if err != nil {
-			fmt.Println(err)
-		}
-		plainText[i] = make([]byte, len(ptext))
-
-		end := aes.BlockSize
-		for start := 0; start < len(ptext); start += aes.BlockSize {
-			fmt.Println(ptext[start:end], start, end)
-			cipher.Decrypt(plainText[i][start:end], ptext[start:end])
-			end += aes.BlockSize
-		}
-		// fmt.Println("got here")
-		if i == 0 {
-			iv := bytes.Repeat([]byte{byte(0x0)}, len(ptext)) // noop?
-			plain = FixedXOR(plainText[i], iv)
-		} else {
-			plain = FixedXOR(plainText[i], ptext)
-		}
-	}
-
-	plen := len(plain)
-	_ = plen
-
-	//padCount := 0
-	//padChar := plain[plen-1:][0]
-	//for x := plen - 1; x > 0; x-- {
-	//	if padChar == plain[x] {
-	//		padCount++
-	//	} else {
-	//		break
-	//	}
-	//}
-	//return plain[:plen-padCount], nil
-	return plainText, nil
-}
-
 func TestCBCEncrypt(t *testing.T) {
 	key := []byte("YELLOW SUBMARINE")
 	plaintext := []byte("this should be!!!!!!")
@@ -158,30 +111,19 @@ func TestCBCEncrypt(t *testing.T) {
 
 func TestCBCDecrypt(t *testing.T) {
 	key := []byte("YELLOW SUBMARINE")
-	//plaintext := []byte("this should be!!!!!!")
-	//cipherText, err := encCBC(key, plaintext)
-	//if err != nil {
-	//	fmt.Println(err)
-	//}
-	//out, err := decCBC(key, cipherText)
-	//if err != nil {
-	//	fmt.Println(err)
-	//}
-
-	//if !reflect.DeepEqual(plaintext, out) {
-	//	t.Fatalf("wrong result: want '%s'\nbut got '%s'", plaintext, out)
-	//}
 
 	data, err := base64DecodeFile("10.txt")
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
 
-	//jdata := bytes.Join(bytes.Split(data, []byte{byte('\n')}), []byte(""))
-
-	inCipherText, err := decCBCBlock(key, data)
+	out, err := decCBC(key, data)
 	if err != nil {
-		fmt.Println(err)
+		t.Fatalf("%s", err)
 	}
-	fmt.Printf("%s\n", inCipherText)
+
+	want := []byte("VIP. Vanilla Ice yep, yep, I'm comin' hard like a rhino ")
+	if !bytes.Contains(out, want) {
+		t.Fatalf("wrong result: want '%s'\nbut got '%s'", want, out)
+	}
 }
