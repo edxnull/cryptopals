@@ -21,7 +21,7 @@ func HexToBase64(input string) (string, error) {
 
 func FixedXOR(a, b []byte) []byte {
 	if len(a) != len(b) {
-		panic("a and b should be equal!")
+		panic("FixedXOR: a and b should be equal!")
 	}
 	mk := make([]byte, len(a))
 	for i := range a {
