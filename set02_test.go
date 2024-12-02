@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"crypto/aes"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"reflect"

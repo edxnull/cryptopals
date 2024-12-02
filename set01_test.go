@@ -259,14 +259,7 @@ func TestBreakRepeatingKeyXOR(t *testing.T) {
 }
 
 func TestAES128Encrypt(t *testing.T) {
-	f, err := os.Open("7.txt")
-	if err != nil {
-		t.Fatalf("%s", err)
-	}
-	defer f.Close()
-
-	data, _ := io.ReadAll(f)
-	data, err = base64.StdEncoding.DecodeString(string(data))
+	data, err := base64DecodeFile("7.txt")
 	if err != nil {
 		t.Fatalf("%s", err)
 	}

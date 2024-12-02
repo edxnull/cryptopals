@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/base64"
 	"encoding/hex"
+	"io"
+	"os"
 )
 
 // Hex encoding and Base64 encoding
@@ -42,4 +44,22 @@ func RepeatingKeyXOR(input []byte, key []byte) []byte {
 		xored[i] = input[i] ^ key[i%len(key)]
 	}
 	return xored
+}
+
+func base64DecodeFile(filename string) ([]byte, error) {
+	f, err := os.Open("7.txt")
+	if err != nil {
+		return []byte{}, err
+	}
+	defer f.Close()
+
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return []byte{}, err
+	}
+	data, err = base64.StdEncoding.DecodeString(string(data))
+	if err != nil {
+		return []byte{}, err
+	}
+	return data, nil
 }
