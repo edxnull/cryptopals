@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/aes"
 	"fmt"
 	"reflect"
 	"testing"
@@ -32,7 +33,8 @@ func TestPKCS7(t *testing.T) {
 func TestCBCEncrypt(t *testing.T) {
 	key := []byte("YELLOW SUBMARINE")
 	plaintext := []byte("this should be!!!!!!")
-	cipherText, err := encCBC(key, plaintext)
+	iv := bytes.Repeat([]byte{byte(0x0)}, aes.BlockSize) // noop?
+	cipherText, err := encCBC(iv, key, plaintext)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -47,7 +49,8 @@ func TestCBCDecrypt(t *testing.T) {
 		t.Fatalf("%s", err)
 	}
 
-	out, err := decCBC(key, data)
+	iv := bytes.Repeat([]byte{byte(0x0)}, aes.BlockSize) // noop?
+	out, err := decCBC(iv, key, data)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -66,9 +69,10 @@ func TestCBCDecAfterEnc(t *testing.T) {
 		t.Fatalf("%s", err)
 	}
 
-	dec, _ := decCBC(key, data)
-	enc, _ := encCBC(key, dec)
-	out, _ := decCBC(key, enc)
+	iv := bytes.Repeat([]byte{byte(0x0)}, aes.BlockSize) // noop?
+	dec, _ := decCBC(iv, key, data)
+	enc, _ := encCBC(iv, key, dec)
+	out, _ := decCBC(iv, key, enc)
 
 	want := []byte("VIP. Vanilla Ice yep, yep, I'm comin' hard like a rhino ")
 	if !bytes.Contains(out, want) {
