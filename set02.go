@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	mrand "math/rand/v2"
 )
 
 func pkcs7(s []byte, bsize int) ([]byte, error) {
@@ -84,7 +85,20 @@ func randAESKey() []byte {
 	return buf
 }
 
+func randRange() []byte {
+	r := mrand.IntN(10-5) + 5
+	buf := make([]byte, r)
+	_, err := rand.Read(buf)
+	if err != nil {
+		log.Fatalf("error while generating random string: %s", err)
+	}
+	return buf
+}
+
 func encOracle(input []byte) ([]byte, error) {
-	key := randAESKey()
-	return encCBC(key, input)
+	var b bytes.Buffer
+	b.Write(randRange())
+	b.Write(input)
+	b.Write(randRange())
+	return encCBC(randAESKey(), b.Bytes())
 }

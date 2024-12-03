@@ -87,3 +87,10 @@ func TestEncOracle(t *testing.T) {
 	}
 	fmt.Printf("%s\n", oracle)
 }
+
+func TestRandRange(t *testing.T) {
+	r := len(randRange())
+	if r < 5 || r > 10 {
+		t.Fatal("unexpected random range: should be < 5 and > 10")
+	}
+}
