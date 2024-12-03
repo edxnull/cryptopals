@@ -80,7 +80,7 @@ func randAESKey() []byte {
 	buf := make([]byte, 16)
 	_, err := rand.Read(buf)
 	if err != nil {
-		log.Fatalf("error while generating random string: %s", err)
+		log.Fatalf("error while generating random AES key: %s", err)
 	}
 	return buf
 }
