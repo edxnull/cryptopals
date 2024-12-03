@@ -79,3 +79,11 @@ func TestCBCDecAfterEnc(t *testing.T) {
 func TestRandAESKey(t *testing.T) {
 	fmt.Println(randAESKey())
 }
+
+func TestEncOracle(t *testing.T) {
+	oracle, err := encOracle([]byte("gibber gabber fooo bar baz"))
+	if err != nil {
+		t.Fatalf("error ocucred: %s\n", err)
+	}
+	fmt.Printf("%s\n", oracle)
+}

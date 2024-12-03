@@ -83,3 +83,8 @@ func randAESKey() []byte {
 	}
 	return buf
 }
+
+func encOracle(input []byte) ([]byte, error) {
+	key := randAESKey()
+	return encCBC(key, input)
+}
