@@ -3,8 +3,10 @@ package main
 import (
 	"bytes"
 	"crypto/aes"
+	"crypto/rand"
 	"errors"
 	"fmt"
+	"log"
 )
 
 func pkcs7(s []byte, bsize int) ([]byte, error) {
@@ -71,4 +73,13 @@ func decCBC(key []byte, cipherText []byte) ([]byte, error) {
 		buffer.Write(plainText)
 	}
 	return buffer.Bytes(), nil
+}
+
+func randAESKey() []byte {
+	buf := make([]byte, 16)
+	_, err := rand.Read(buf)
+	if err != nil {
+		log.Fatalf("error while generating random string: %s", err)
+	}
+	return buf
 }

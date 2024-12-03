@@ -75,3 +75,7 @@ func TestCBCDecAfterEnc(t *testing.T) {
 		t.Fatalf("wrong result: want '%s'\nbut got '%s'", want, out)
 	}
 }
+
+func TestRandAESKey(t *testing.T) {
+	fmt.Println(randAESKey())
+}
