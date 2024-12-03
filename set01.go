@@ -58,11 +58,7 @@ func base64DecodeFile(filename string) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-	data, err = base64.StdEncoding.DecodeString(string(data))
-	if err != nil {
-		return []byte{}, err
-	}
-	return data, nil
+	return base64.StdEncoding.DecodeString(string(data))
 }
 
 func AES128Encrypt(key, data []byte) ([]byte, error) {
