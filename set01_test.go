@@ -258,25 +258,46 @@ func TestBreakRepeatingKeyXOR(t *testing.T) {
 	_ = RepeatingKeyXOR(data, answer)
 }
 
-func TestAES128Encrypt(t *testing.T) {
+func TestAES128Decrypt(t *testing.T) {
 	data, err := base64DecodeFile("7.txt")
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
 
-	cipher, _ := aes.NewCipher([]byte("YELLOW SUBMARINE"))
-	decrypted := make([]byte, len(data))
-
-	end := aes.BlockSize
-	for start := 0; start < len(data); start += aes.BlockSize {
-		cipher.Decrypt(decrypted[start:end], data[start:end])
-		end += aes.BlockSize
+	dec, err := AES128Decrypt([]byte("YELLOW SUBMARINE"), data)
+	if err != nil {
+		t.Fatalf("%s", err)
 	}
 
 	want := []byte("I'm back and I'm ringin' the bell")
-	if !bytes.Contains(decrypted, want) {
-		t.Fatalf("wrong result: want '%s'\nbut got '%s'", want, decrypted[0:33])
+	if !bytes.Contains(dec, want) {
+		t.Fatalf("wrong result: want '%s'\nbut got '%s'", want, dec[0:33])
 	}
+}
+
+func TestAES128DecryptEncrypt(t *testing.T) {
+	data, err := base64DecodeFile("7.txt")
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	fmt.Printf("%x\n", data[0:30])
+
+	key := []byte("YELLOW SUBMARINE")
+
+	dec, err := AES128Decrypt(key, data)
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	enc, err := AES128Encrypt(key, dec)
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	if !bytes.Contains(enc[0:60], data[0:60]) {
+		t.Fatalf("wrong result: want '%s'\nbut got '%s'", data[0:60], enc[0:60])
+	}
+
 }
 
 // In this file are a bunch of hex-encoded ciphertexts.

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/aes"
 	"encoding/base64"
 	"encoding/hex"
 	"io"
@@ -62,4 +63,38 @@ func base64DecodeFile(filename string) ([]byte, error) {
 		return []byte{}, err
 	}
 	return data, nil
+}
+
+func AES128Encrypt(key, data []byte) ([]byte, error) {
+	cipher, err := aes.NewCipher(key)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	enc := make([]byte, len(data))
+
+	end := aes.BlockSize
+	for start := 0; start < len(data); start += aes.BlockSize {
+		cipher.Encrypt(enc[start:end], data[start:end])
+		end += aes.BlockSize
+	}
+
+	return enc, nil
+}
+
+func AES128Decrypt(key, data []byte) ([]byte, error) {
+	cipher, err := aes.NewCipher(key)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	dec := make([]byte, len(data))
+
+	end := aes.BlockSize
+	for start := 0; start < len(data); start += aes.BlockSize {
+		cipher.Decrypt(dec[start:end], data[start:end])
+		end += aes.BlockSize
+	}
+
+	return dec, nil
 }
