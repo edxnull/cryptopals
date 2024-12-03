@@ -67,11 +67,16 @@ func AES128Encrypt(key, data []byte) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	enc := make([]byte, len(data))
+	padb, err := pkcs7(data, aes.BlockSize)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	enc := make([]byte, len(padb))
 
 	end := aes.BlockSize
-	for start := 0; start < len(data); start += aes.BlockSize {
-		cipher.Encrypt(enc[start:end], data[start:end])
+	for start := 0; start < len(padb); start += aes.BlockSize {
+		cipher.Encrypt(enc[start:end], padb[start:end])
 		end += aes.BlockSize
 	}
 
