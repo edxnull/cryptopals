@@ -96,9 +96,41 @@ func randRange() []byte {
 }
 
 func encOracle(input []byte) ([]byte, error) {
-	var b bytes.Buffer
-	b.Write(randRange())
-	b.Write(input)
-	b.Write(randRange())
-	return encCBC(randAESKey(), b.Bytes())
+	var (
+		buff       bytes.Buffer
+		err        error
+		firstHalf  []byte
+		secondHalf []byte
+	)
+
+	buff.Write(randRange())
+	buff.Write(input)
+	buff.Write(randRange())
+
+	b := buff.Bytes()
+	half := len(b) / 2
+
+	key := randAESKey()
+
+	if mrand.Int()%2 == 0 {
+		firstHalf, err = encCBC(randAESKey(), key, b[:half])
+		if err != nil {
+			return []byte{}, err
+		}
+		secondHalf, err = AES128Encrypt(key, b[half:])
+		if err != nil {
+			return []byte{}, err
+		}
+		return bytes.Join([][]byte{firstHalf, secondHalf}, []byte("")), nil
+	}
+
+	secondHalf, err = AES128Encrypt(key, b[:half])
+	if err != nil {
+		return []byte{}, err
+	}
+	firstHalf, err = encCBC(randAESKey(), key, b[half:])
+	if err != nil {
+		return []byte{}, err
+	}
+	return bytes.Join([][]byte{secondHalf, firstHalf}, []byte("")), nil
 }
