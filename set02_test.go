@@ -5,6 +5,7 @@ import (
 	"crypto/aes"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -96,12 +97,16 @@ func TestRandAESKey(t *testing.T) {
 	}
 }
 
+// NOTE: normal that it is flaky, because oracle encrypts in ECB only
+// half the time.
 func TestEncOracle(t *testing.T) {
 	oracle, err := encOracle(bytes.Repeat([]byte("a"), aes.BlockSize*3))
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(detectBlockCipher(oracle))
+	if strings.Compare(detectBlockCipher(oracle), "ECB") == 0 {
+		fmt.Println(detectBlockCipher(oracle))
+	}
 }
 
 func TestRandRange(t *testing.T) {
@@ -109,4 +114,31 @@ func TestRandRange(t *testing.T) {
 	if r < 5 || r > 10 {
 		t.Fatal("unexpected random range: should be < 5 and > 10")
 	}
+}
+
+func TestDecByteAtATime(t *testing.T) {
+	zero, err := decByteAtATime(bytes.Repeat([]byte(""), 0))
+	if err != nil {
+		t.Fatal("unexpected error")
+	}
+
+	var blockSize int
+	for x := range 64 {
+		curr, err := decByteAtATime(bytes.Repeat([]byte("A"), x))
+		if err != nil {
+			t.Fatal("unexpected error")
+		}
+
+		if len(curr) != len(zero) {
+			blockSize = len(curr) - len(zero)
+			break
+		}
+	}
+	_ = blockSize
+
+	out, err := decByteAtATime(bytes.Repeat([]byte("A"), aes.BlockSize))
+	if err != nil {
+		t.Fatal("unexpected error")
+	}
+	fmt.Printf("%s\n", detectBlockCipher(out))
 }
