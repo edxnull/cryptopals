@@ -97,11 +97,11 @@ func TestRandAESKey(t *testing.T) {
 }
 
 func TestEncOracle(t *testing.T) {
-	oracle, err := encOracle([]byte("gibber gabber __fooo bar baz"))
+	oracle, err := encOracle(bytes.Repeat([]byte("a"), aes.BlockSize*3))
 	if err != nil {
-		t.Fatalf("error ocucred: %s\n", err)
+		t.Fatal(err)
 	}
-	fmt.Printf("%x\n", oracle)
+	fmt.Println(detectBlockCipher(oracle))
 }
 
 func TestRandRange(t *testing.T) {

@@ -5,7 +5,6 @@ import (
 	"crypto/aes"
 	"crypto/rand"
 	"errors"
-	"fmt"
 	"log"
 	mrand "math/rand/v2"
 )
@@ -114,9 +113,19 @@ func encOracle(input []byte) ([]byte, error) {
 	iv := randAESKey()
 	key := randAESKey()
 	if mrand.Int()%2 == 0 {
-		fmt.Println("CBC")
 		return encCBC(iv, key, b)
 	}
-	fmt.Println("ECB")
 	return AES128Encrypt(key, b)
+}
+
+func detectBlockCipher(oracle []byte) string {
+	end := aes.BlockSize
+	for start := 0; start < len(oracle); start += aes.BlockSize {
+		count := bytes.Count(oracle, oracle[start:end])
+		if count > 1 {
+			return "ECB"
+		}
+		end += aes.BlockSize
+	}
+	return "CBC"
 }
