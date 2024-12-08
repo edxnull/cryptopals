@@ -32,48 +32,55 @@ func encCBC(iv, key, plainText []byte) ([]byte, error) {
 	}
 	plainText, err = pkcs7(plainText, aes.BlockSize)
 	if err != nil {
-		fmt.Println(err)
+		return []byte{}, err
 	}
 	cipherText := make([]byte, aes.BlockSize)
 	var buffer bytes.Buffer
 
 	end := aes.BlockSize
+	var xorBlock []byte
 	for start := 0; start < len(plainText); start += aes.BlockSize {
 		if start == 0 {
-			//iv := bytes.Repeat([]byte{byte(0x0)}, aes.BlockSize) // noop?
-			cipherText = FixedXOR(plainText[start:end], iv)
+			xorBlock = FixedXOR(plainText[start:end], iv)
 		} else {
-			cipherText = FixedXOR(plainText[start:end], cipherText)
+			xorBlock = FixedXOR(plainText[start:end], cipherText)
 		}
-		cipher.Encrypt(cipherText, plainText[start:end])
+		cipher.Encrypt(cipherText, xorBlock)
+		_, err := buffer.Write(cipherText)
+		if err != nil {
+			return []byte{}, err
+		}
 		end += aes.BlockSize
-		buffer.Write(cipherText)
 	}
 	return buffer.Bytes(), nil
 }
 
 func decCBC(iv, key, cipherText []byte) ([]byte, error) {
+	var buffer bytes.Buffer
+	var xorBlock []byte
+
 	cipher, err := aes.NewCipher(key)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	plainText := make([]byte, aes.BlockSize)
-	var buffer bytes.Buffer
-
+	prevBlock := iv
+	decBlock := make([]byte, aes.BlockSize)
 	end := aes.BlockSize
 	for start := 0; start < len(cipherText); start += aes.BlockSize {
-		if start == 0 {
-			//iv := bytes.Repeat([]byte{byte(0x0)}, aes.BlockSize) // noop?
-			plainText = FixedXOR(plainText, iv)
-		} else {
-			plainText = FixedXOR(plainText, cipherText[start:end])
+		cipher.Decrypt(decBlock, cipherText[start:end])
+		xorBlock = FixedXOR(decBlock, prevBlock)
+		_, err := buffer.Write(xorBlock)
+		if err != nil {
+			return []byte{}, err
 		}
-		cipher.Decrypt(plainText, cipherText[start:end])
+		prevBlock = cipherText[start:end]
 		end += aes.BlockSize
-		buffer.Write(plainText)
 	}
-	return buffer.Bytes(), nil
+
+	b := buffer.Bytes()
+
+	return b, nil
 }
 
 func randAESKey() []byte {
