@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"log"
 	mrand "math/rand/v2"
@@ -128,4 +129,25 @@ func detectBlockCipher(oracle []byte) string {
 		end += aes.BlockSize
 	}
 	return "CBC"
+}
+
+const consistentKey = "cbiohsddghflkizz"
+
+func decByteAtATime(input []byte) ([]byte, error) {
+	var buff bytes.Buffer
+
+	prefix := `Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg
+aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq
+dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg
+YnkK`
+
+	decodedPrefix, err := base64.StdEncoding.DecodeString(prefix)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	buff.Write(input)
+	buff.Write(decodedPrefix)
+
+	return AES128Encrypt([]byte(consistentKey), buff.Bytes())
 }
