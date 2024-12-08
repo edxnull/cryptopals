@@ -81,7 +81,19 @@ func TestCBCDecAfterEnc(t *testing.T) {
 }
 
 func TestRandAESKey(t *testing.T) {
-	fmt.Println(randAESKey())
+	a := randAESKey()
+	b := randAESKey()
+	c := randAESKey()
+	ab := bytes.Equal(a, b)
+	ac := bytes.Equal(a, c)
+	bc := bytes.Equal(b, c)
+	if ab {
+		t.Fatal("randAESKey() is not random")
+	} else if ac {
+		t.Fatal("randAESKey() is not random")
+	} else if bc {
+		t.Fatal("randAESKey() is not random")
+	}
 }
 
 func TestEncOracle(t *testing.T) {
