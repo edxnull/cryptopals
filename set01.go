@@ -48,7 +48,7 @@ func RepeatingKeyXOR(input []byte, key []byte) []byte {
 }
 
 func base64DecodeFile(filename string) ([]byte, error) {
-	f, err := os.Open("7.txt")
+	f, err := os.Open(filename)
 	if err != nil {
 		return []byte{}, err
 	}
